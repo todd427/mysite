@@ -2,7 +2,28 @@ from django.conf import settings
 from django.db import models
 from django.utils import timezone
 from django.urls import reverse
+from django.db import models
+from django.utils.text import slugify
 from taggit.managers import TaggableManager
+# blog/models.py
+
+from taggit.models import TagBase, ItemBase
+
+
+#tags = TaggableManager(through=TaggedPost)
+
+class CustomTag(TagBase):
+    slug = models.SlugField(unique=True, max_length=250)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+class TaggedPost(ItemBase):
+    content_object = models.ForeignKey('Post', on_delete=models.CASCADE)
+    tag = models.ForeignKey(CustomTag, related_name="tagged_items", on_delete=models.CASCADE)
+
 
 class PublishedManager(models.Manager):
     def get_queryset(self):
@@ -25,7 +46,7 @@ class Post(models.Model):
         unique_for_date='publish'
     )
     status = models.CharField(
-        max_length=2,
+        max_length=250,
         choices=Status.choices,
         default=Status.DRAFT
     )
@@ -67,7 +88,7 @@ class Comment(models.Model):
         on_delete=models.CASCADE, 
         related_name='comments'
         )
-    name = models.CharField(max_length=80)
+    name = models.CharField(max_length=250)
     email = models.EmailField()
     body = models.TextField()
     created = models.DateTimeField(auto_now_add=True)
