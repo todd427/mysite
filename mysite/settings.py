@@ -28,6 +28,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# mysite/settings.py
+TAGGIT_TAG_MODEL = 'blog.CustomTag'
 
 # Application definition
 SITE_ID = 1
